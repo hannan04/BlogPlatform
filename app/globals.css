@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply antialiased;
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900;
+  }
+
+  .muted-text {
+    @apply text-slate-600 dark:text-slate-300;
+  }
+}
