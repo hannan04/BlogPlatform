@@ -69,17 +69,21 @@ import { connectToDatabase } from "@/lib/db";
 import Blog from "@/models/Blog";
 
 // GET all blogs
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToDatabase();
+    const blog = await Blog.findById(params.id).populate("author", "name email");
 
-    const blogs = await Blog.find({})
-      .sort({ createdAt: -1 })
-      .populate("author", "name email");
+    if (!blog) {
+      return NextResponse.json({ message: "Blog not found" }, { status: 404 });
+    }
 
-    return NextResponse.json({ blogs }, { status: 200 });
+    return NextResponse.json({ blog }, { status: 200 });
   } catch (error) {
-    console.error("Fetch blogs error:", error);
+    console.error("Fetch blog error:", error);
     return NextResponse.json({ message: "Internal server error." }, { status: 500 });
   }
 }
