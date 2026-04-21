@@ -1,27 +1,26 @@
 import mongoose from "mongoose";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getBearerToken, verifyAuthToken } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Blog from "@/models/Blog";
 
 type Params = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 };
 
 function isValidObjectId(id: string) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(_request: NextRequest, { params }: Params) {
+  const { id } = await params;
   try {
-    if (!isValidObjectId(params.id)) {
+    if (!isValidObjectId(id)) {
       return NextResponse.json({ message: "Invalid blog id." }, { status: 400 });
     }
 
     await connectToDatabase();
-    const blog = await Blog.findById(params.id).populate("author", "name email");
+    const blog = await Blog.findById(id).populate("author", "name email");
 
     if (!blog) {
       return NextResponse.json({ message: "Blog not found." }, { status: 404 });
@@ -34,9 +33,10 @@ export async function GET(_request: Request, { params }: Params) {
   }
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   try {
-    if (!isValidObjectId(params.id)) {
+    if (!isValidObjectId(id)) {
       return NextResponse.json({ message: "Invalid blog id." }, { status: 400 });
     }
 
@@ -66,7 +66,7 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     await connectToDatabase();
-    const existingBlog = await Blog.findById(params.id);
+    const existingBlog = await Blog.findById(id);
 
     if (!existingBlog) {
       return NextResponse.json({ message: "Blog not found." }, { status: 404 });
@@ -76,7 +76,7 @@ export async function PATCH(request: Request, { params }: Params) {
       return NextResponse.json({ message: "Forbidden." }, { status: 403 });
     }
 
-    const blog = await Blog.findByIdAndUpdate(params.id, updates, {
+    const blog = await Blog.findByIdAndUpdate(id, updates, {
       new: true,
       runValidators: true
     }).populate("author", "name email");
@@ -92,13 +92,14 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: Params) {
+  const { id } = await params;
   try {
-    if (!isValidObjectId(params.id)) {
+    if (!isValidObjectId(id)) {
       return NextResponse.json({ message: "Invalid blog id." }, { status: 400 });
     }
 
-    const token = getBearerToken(_request.headers.get("authorization"));
+    const token = getBearerToken(request.headers.get("authorization"));
     if (!token) {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
     }
@@ -111,7 +112,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     }
 
     await connectToDatabase();
-    const existingBlog = await Blog.findById(params.id);
+    const existingBlog = await Blog.findById(id);
 
     if (!existingBlog) {
       return NextResponse.json({ message: "Blog not found." }, { status: 404 });
@@ -121,7 +122,7 @@ export async function DELETE(_request: Request, { params }: Params) {
       return NextResponse.json({ message: "Forbidden." }, { status: 403 });
     }
 
-    const deletedBlog = await Blog.findByIdAndDelete(params.id);
+    const deletedBlog = await Blog.findByIdAndDelete(id);
 
     if (!deletedBlog) {
       return NextResponse.json({ message: "Blog not found." }, { status: 404 });

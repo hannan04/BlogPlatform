@@ -16,9 +16,7 @@ type BlogDetail = {
 };
 
 type PageProps = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 };
 
 function isValidObjectId(id: string) {
@@ -26,12 +24,14 @@ function isValidObjectId(id: string) {
 }
 
 export default async function BlogDetailsPage({ params }: PageProps) {
-  if (!isValidObjectId(params.id)) {
+  const { id } = await params;
+
+  if (!isValidObjectId(id)) {
     notFound();
   }
 
   await connectToDatabase();
-  const blog = (await Blog.findById(params.id).populate("author", "name email").lean()) as
+  const blog = (await Blog.findById(id).populate("author", "name email").lean()) as
     | BlogDetail
     | null;
 

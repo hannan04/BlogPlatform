@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, use, useEffect, useMemo, useState } from "react";
 
 type JwtPayload = {
   userId: string;
@@ -34,7 +34,8 @@ function getAuthPayload(token: string): JwtPayload | null {
   }
 }
 
-export default function EditBlogPage({ params }: { params: { id: string } }) {
+export default function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -59,7 +60,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function loadBlog() {
       try {
-        const response = await fetch(`/api/blogs/${params.id}`);
+        const response = await fetch(`/api/blogs/${id}`);
         const data = (await response.json()) as BlogResponse;
 
         if (!response.ok || !data.blog) {
@@ -84,7 +85,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
     if (token) {
       loadBlog();
     }
-  }, [params.id, token, currentUserId]);
+  }, [id, token, currentUserId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -103,7 +104,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/blogs/${params.id}`, {
+      const response = await fetch(`/api/blogs/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +123,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
       }
 
       setSuccess("Post updated successfully.");
-      setTimeout(() => router.push(`/blog/${params.id}`), 700);
+      setTimeout(() => router.push(`/blog/${id}`), 700);
     } catch {
       setError("Something went wrong while updating.");
     } finally {
@@ -131,18 +132,18 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <section className="mx-auto max-w-2xl space-y-6 rounded-xl border bg-white p-6 shadow-sm">
+    <section className="mx-auto max-w-2xl space-y-6 rounded-xl border bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Edit blog post</h1>
-        <p className="text-sm text-slate-600">Update your post and save changes.</p>
+        <h1 className="text-2xl font-semibold dark:text-slate-100">Edit blog post</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Update your post and save changes.</p>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-600">Loading post...</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Loading post...</p>
       ) : (
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label htmlFor="title" className="text-sm font-medium text-slate-700">
+            <label htmlFor="title" className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Title
             </label>
             <input
@@ -150,19 +151,19 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="content" className="text-sm font-medium text-slate-700">
+            <label htmlFor="content" className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Content
             </label>
             <textarea
               id="content"
               value={content}
               onChange={(event) => setContent(event.target.value)}
-              className="min-h-56 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2"
+              className="min-h-56 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none ring-blue-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
 
@@ -173,11 +174,11 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
             >
               {isSubmitting ? "Saving..." : "Save changes"}
             </button>
-            <Link href={`/blog/${params.id}`} className="text-sm text-slate-600 hover:text-slate-900">
+            <Link href={`/blog/${id}`} className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
               Cancel
             </Link>
           </div>

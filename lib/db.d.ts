@@ -1,3 +1,3 @@
-import mongoose from "mongoose";
+import type { Connection } from "mongoose";
 
-export function connectToDatabase(): Promise<typeof mongoose>;
+export function connectToDatabase(): Promise<Connection>;
