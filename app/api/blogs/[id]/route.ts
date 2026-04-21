@@ -4,15 +4,13 @@ import { getBearerToken, verifyAuthToken } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Blog from "@/models/Blog";
 
-type Params = {
-  params: Promise<{ id: string }>;
-};
+
 
 function isValidObjectId(id: string) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     if (!isValidObjectId(id)) {
@@ -33,7 +31,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     if (!isValidObjectId(id)) {
@@ -92,7 +90,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     if (!isValidObjectId(id)) {

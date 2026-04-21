@@ -15,15 +15,13 @@ type BlogDetail = {
   };
 };
 
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
+
 
 function isValidObjectId(id: string) {
   return /^[a-f\d]{24}$/i.test(id);
 }
 
-export default async function BlogDetailsPage({ params }: PageProps) {
+export default async function BlogDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   if (!isValidObjectId(id)) {
